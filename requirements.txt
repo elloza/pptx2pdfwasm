@@ -1,1 +1,2 @@
-wasmer
+playwright
+install_playwright

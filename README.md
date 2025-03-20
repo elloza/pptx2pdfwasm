@@ -4,8 +4,6 @@ Crazy idea: use Libre Office wasm version for creating a pptx2pdf library in pyt
 
 This could be overkill, but it is a fun project to work on.
 
-Status: Bad luck. Work in progress....
-
 ## The problem
 
 It turns out that converting a pptx file to pdf is not that easy on Python. There are several libraries that can do that, but they are not cross-platform. For example, `python-pptx` is a great library, but it only works on Windows. `unoconv` is another great library, but it requires Libre Office to be installed on the system.
@@ -22,4 +20,13 @@ The idea is to create a python library that uses the Libre Office wasm version t
 
 1. The office WASM version: the most interesting resource is the Libre Office wasm version. Particulary, the version from [ZetaOffice](https://github.com/allotropia/zetajs). This version is a fork of the Libre Office wasm version, and it is more up-to-date than the original version. The Libre Office wasm version is a full version of Libre Office compiled to WebAssembly. It is a full version of Libre Office, so it can do everything that the desktop version can do. The Libre Office wasm version is a great resource because it is a full version of Libre Office that can run on the browser. This means that we can use it to convert the pptx file to pdf without the need for the user to install anything.
 
-2. Python libraries for working with WebAssembly: there are several python libraries for working with WebAssembly. The most interesting libraries are `Wasmer` and  `wasmtime-py`. These libraries allow us to run WebAssembly code from Python. This means that we can use the Libre Office wasm version from Python.
+2. Python libraries: the main idea is serve a website and browse it with libraries like playwright or selenium. All the conversion will be done on the browser and controlled from Python. This is no different from using a headless browser to convert a webpage to pdf. It is overkill, but it's working.
+
+## Status
+
+Status: Finally, it's working on Linux!
+
+Next try:
+- [x] Linux
+- [ ] MacOS
+- [ ] Windows

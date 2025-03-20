@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "pptx2pdfwasm"
+version = "0.1.0"
+description = "Convert PPTX to PDF using LibreOffice WASM and Playwright"
+authors = ["elloza <loza@usal.es>"]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+playwright = "*"
+install_playwright = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ZetaJS PPTX a PDF</title>
+
+    <script>
+        window.sofficeLoaded = false;
+
+        var Module = {
+            canvas: document.getElementById('qtcanvas'),
+            uno_scripts: ["zeta.js", "office_thread.js"],
+            locateFile(path) {
+                const filePath = `${path}`;
+                console.log(`📥 [Module] Solicitado archivo: ${filePath}`);
+                return filePath;
+            },
+            onRuntimeInitialized() {
+                window.sofficeLoaded = true;
+                console.log("✅ [Module] LibreOffice WASM cargado y listo.");
+            },
+            arguments: ['--headless']
+        };
+    </script>
+
+    <script>
+        function showError(message) {
+            console.error("❌ ERROR:", message);
+            document.getElementById("errorContainer").innerText = `❌ ERROR: ${message}`;
+        }
+
+        function encodeBase64(data) {
+            console.log("🔄 [Base64 Encoding] Dividiendo en bloques para evitar stack overflow...");
+            const chunkSize = 8192;  // Dividimos en partes más pequeñas
+            let binaryString = "";
+            for (let i = 0; i < data.length; i += chunkSize) {
+                binaryString += String.fromCharCode(...data.slice(i, i + chunkSize));
+            }
+            return btoa(binaryString);
+        }
+
+        async function convertPPTX(base64data) {
+            try {
+                console.log("🚩 [Conversión iniciada]");
+                const data = Uint8Array.from(atob(base64data), c => c.charCodeAt(0));
+                FS.writeFile('/tmp/input.pptx', data);
+                console.log("📁 Archivo PPTX guardado en FS (/tmp/input.pptx)");
+
+                const port = await Module.uno_main;
+                console.log("🟢 Puerto uno_main listo, enviando mensaje de conversión...");
+
+                port.postMessage({
+                    cmd: 'convert',
+                    name: 'input',
+                    from: '/tmp/input.pptx',
+                    to: '/tmp/output.pdf'
+                });
+
+                return new Promise((resolve, reject) => {
+                    let timeout = setTimeout(() => {
+                        showError("⏳ ERROR: La conversión está tardando demasiado.");
+                        reject(null);
+                    }, 60000);
+
+                    port.onmessage = e => {
+                        clearTimeout(timeout);
+                        console.log("📬 [Puerto mensaje recibido]:", e.data);
+
+                        if (e.data.cmd === 'converted') {
+                            console.log("✅ [Conversión terminada correctamente]");
+                            try {
+                                if (!FS.analyzePath('/tmp/output.pdf').exists) {
+                                    showError("⚠️ ERROR: El archivo PDF no fue generado.");
+                                    reject(null);
+                                    return;
+                                }
+
+                                const pdfData = FS.readFile('/tmp/output.pdf');
+                                if (!pdfData || pdfData.length === 0) {
+                                    showError("⚠️ ERROR: El archivo PDF está vacío.");
+                                    reject(null);
+                                    return;
+                                }
+
+                                const pdfB64 = encodeBase64(pdfData);
+
+                                FS.unlink('/tmp/input.pptx');
+                                FS.unlink('/tmp/output.pdf');
+                                console.log("🗑️ Archivos temporales eliminados del FS.");
+
+                                resolve(pdfB64);
+                            } catch (err) {
+                                showError("❌ ERROR: Fallo al leer o eliminar el archivo PDF.");
+                                reject(null);
+                            }
+                        } else if (e.data.cmd === 'start') {
+                            console.log("🟢 [Worker listo para convertir]");
+                        } else {
+                            showError(`❌ ERROR inesperado: ${JSON.stringify(e.data)}`);
+                            reject(null);
+                        }
+                    };
+                });
+
+            } catch (error) {
+                showError("❌ ERROR general en la conversión: " + error.message);
+                return null;
+            }
+        }
+    </script>
+
+    <script src="soffice.js"></script>
+</head>
+<body>
+    <h1>ZetaJS PPTX a PDF (Depuración completa)</h1>
+    <div id="errorContainer" style="color: red;"></div>
+    <canvas id="qtcanvas" style="display: none;"></canvas>
+</body>
+</html>

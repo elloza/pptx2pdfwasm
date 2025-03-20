@@ -13,5 +13,14 @@
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/.conda/bin/python"
         }
+        ,
+        {
+            "name": "Python Debugger: convert_xlsx.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/convert_xlsx.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.conda/bin/python"
+        }
     ]
 }
