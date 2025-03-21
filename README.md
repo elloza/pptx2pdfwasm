@@ -50,6 +50,20 @@ For installing the package:
 pip install git+https://github.com/elloza/pptx2pdfwasm
 ```
 
+# How to use it 📚
+
+```python
+from pptx2pdfwasm import PPTXtoPDFConverter
+converter = PPTXtoPDFConverter(headless=False, log_enabled=False)
+converter.convert("example.pptx", "example.pdf")
+```
+
+Command line:
+
+```bash
+python -m pptx2pdfwasm example.pptx example.pdf
+```
+
 # Acknowledgments
 
 Thank you to the ZetaOffice team for the Libre Office wasm version. 🙏
