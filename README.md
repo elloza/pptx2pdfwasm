@@ -53,5 +53,5 @@ pip install git+https://github.com/elloza/pptx2pdfwasm
 # Acknowledgments
 
 Thank you to the ZetaOffice team for the Libre Office wasm version. 🙏
+
 And their great work on the Libre Office wasm version and supporting the community. 🌟
-```
