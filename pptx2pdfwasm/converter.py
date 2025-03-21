@@ -2,10 +2,11 @@ import asyncio
 import base64
 import threading
 import socket
+import sys
+import zipfile
 from pathlib import Path
 from http.server import SimpleHTTPRequestHandler
 from socketserver import TCPServer
-from playwright.async_api import async_playwright
 
 class CustomHTTPRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -25,9 +26,9 @@ class PPTXtoPDFConverter:
     def __init__(self, headless=True):
         self.headless = headless
         self.root_path = Path(__file__).parent / "static"
+        self.static_zip = self.root_path / "static.zip"
 
-        if not self.root_path.exists():
-            raise FileNotFoundError(f"❌ ERROR: La carpeta '{self.root_path}' no existe.")
+        self._ensure_static_files()
 
         if self._is_port_in_use(8000):
             raise OSError("❌ ERROR: El puerto 8000 ya está en uso. Cierra el proceso que lo está usando e inténtalo de nuevo.")
@@ -37,6 +38,18 @@ class PPTXtoPDFConverter:
         self.server_thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.server_thread.start()
         print("🚀 Servidor HTTP iniciado en http://localhost:8000/")
+
+    def _ensure_static_files(self):
+        """Descomprime `static/static.zip` si existe y elimina el ZIP después."""
+        if self.static_zip.exists():
+            print(f"📦 Se encontró `{self.static_zip.name}`, descomprimiendo archivos en `{self.root_path}`...")
+            with zipfile.ZipFile(self.static_zip, "r") as zip_ref:
+                zip_ref.extractall(self.root_path)
+            self.static_zip.unlink()
+            print("✅ Archivos descomprimidos y `static.zip` eliminado.")
+
+        if not self.root_path.exists() or not any(self.root_path.iterdir()):
+            raise FileNotFoundError(f"❌ ERROR: No se encontraron archivos estáticos en `{self.root_path}`.")
 
     def _is_port_in_use(self, port):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -48,6 +61,8 @@ class PPTXtoPDFConverter:
 
     async def _convert(self, pptx_path):
         try:
+            from playwright.async_api import async_playwright
+            
             async with async_playwright() as p:
                 browser = await p.chromium.launch(headless=self.headless)
                 page = await browser.new_page()
@@ -75,11 +90,9 @@ class PPTXtoPDFConverter:
                 if pdf_b64 is None:
                     print("❌ ERROR: `convertPPTX` retornó `null`. Guardando logs y HTML de depuración.")
 
-                    # Guardar logs del navegador
                     with open("browser_logs.txt", "w", encoding="utf-8") as f:
                         f.write("\n".join(logs))
 
-                    # Guardar el contenido HTML actual de la página
                     page_content = await page.content()
                     with open("debug_page.html", "w", encoding="utf-8") as f:
                         f.write(page_content)
