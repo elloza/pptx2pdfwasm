@@ -71,7 +71,7 @@ class PPTXtoPDFConverter:
             self._log(f"📦 Se encontró `{self.static_zip.name}`, descomprimiendo archivos en `{self.root_path}`...")
             with zipfile.ZipFile(self.static_zip, "r") as zip_ref:
                 zip_ref.extractall(self.root_path)
-            #self.static_zip.unlink()
+            self.static_zip.unlink()
             self._log("✅ Archivos descomprimidos correctamente.")
 
         if not self.root_path.exists() or not any(self.root_path.iterdir()):
