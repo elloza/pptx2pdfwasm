@@ -7,7 +7,6 @@ authors = ["elloza <loza@usal.es>"]
 [tool.poetry.dependencies]
 python = ">=3.7"
 playwright = "*"
-install_playwright = "*"
 
 [build-system]
 requires = ["poetry-core"]
