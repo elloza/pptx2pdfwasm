@@ -15,8 +15,7 @@ setup(
         "pptx2pdfwasm": ["static/*"]
     },
     install_requires=[
-        "playwright",
-        "install_playwright"
+        "playwright"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
