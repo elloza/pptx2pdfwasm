@@ -71,8 +71,8 @@ python -m pptx2pdfwasm example.pptx example.pdf
 
 # TODO 📝
 
-[ ] Test carefully on MacOS and Windows
-[ ] Add multiple files in folder conversion
+- [ ] Test carefully on MacOS and Windows
+- [ ] Add multiple files in folder conversion
 
 
 # Known issues and limitation 🐞
