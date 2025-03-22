@@ -2,7 +2,6 @@ import asyncio
 import base64
 import threading
 import socket
-import sys
 import zipfile
 from pathlib import Path
 from http.server import SimpleHTTPRequestHandler
@@ -27,27 +26,40 @@ class StoppableTCPServer(TCPServer):
     def shutdown_server(self):
         self.shutdown()
         self.server_close()
-        if self.log_enabled:
-            print("🛑 Servidor HTTP detenido correctamente.")
 
 class PPTXtoPDFConverter:
-    def __init__(self, headless=True, log_enabled=True):
+    def __init__(self, headless=True, log_enabled=True, port=8000):
         self.headless = headless
         self.log_enabled = log_enabled
+        self.port = port
         self.root_path = Path(__file__).parent / "static"
         self.static_zip = self.root_path / "static.zip"
 
         self._ensure_static_files()
 
-        if self._is_port_in_use(8000):
-            raise OSError("❌ ERROR: El puerto 8000 ya está en uso. Cierra el proceso que lo está usando e inténtalo de nuevo.")
+        if self._is_port_in_use(self.port):
+            raise OSError(f"❌ ERROR: El puerto {self.port} ya está en uso. Cierra el proceso que lo está usando e inténtalo de nuevo.")
 
         handler = lambda *args, **kwargs: CustomHTTPRequestHandler(*args, directory=str(self.root_path), **kwargs)
-        self.server = StoppableTCPServer(("localhost", 8000), handler)
+        self.server = StoppableTCPServer(("localhost", self.port), handler)
         self.server.log_enabled = self.log_enabled  # Propagar configuración de logs al servidor
-        self.server_thread = threading.Thread(target=self.server.serve_forever, daemon=True)
-        self.server_thread.start()
-        self._log("🚀 Servidor HTTP iniciado en http://localhost:8000/")
+        self.server_thread = None
+
+    def start_server(self):
+        if self.server_thread is None:
+            self.server_thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+            self.server_thread.start()
+            self._log(f"🚀 Servidor HTTP iniciado en http://localhost:{self.port}/")
+        else:
+            self._log("⚠️ ADVERTENCIA: El servidor ya está en ejecución.")
+
+    def stop_server(self):
+        if self.server_thread is not None:
+            self.server.shutdown_server()
+            self.server_thread = None
+            self._log("🛑 Servidor HTTP detenido correctamente.")
+        else:
+            self._log("⚠️ ADVERTENCIA: El servidor no está en ejecución.")
 
     def _log(self, message):
         if self.log_enabled:
@@ -59,8 +71,8 @@ class PPTXtoPDFConverter:
             self._log(f"📦 Se encontró `{self.static_zip.name}`, descomprimiendo archivos en `{self.root_path}`...")
             with zipfile.ZipFile(self.static_zip, "r") as zip_ref:
                 zip_ref.extractall(self.root_path)
-            self.static_zip.unlink()
-            self._log("✅ Archivos descomprimidos y `static.zip` eliminado.")
+            #self.static_zip.unlink()
+            self._log("✅ Archivos descomprimidos correctamente.")
 
         if not self.root_path.exists() or not any(self.root_path.iterdir()):
             raise FileNotFoundError(f"❌ ERROR: No se encontraron archivos estáticos en `{self.root_path}`.")
@@ -68,10 +80,6 @@ class PPTXtoPDFConverter:
     def _is_port_in_use(self, port):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             return s.connect_ex(("localhost", port)) == 0
-
-    def stop_server(self):
-        if hasattr(self, "server"):
-            self.server.shutdown_server()
 
     async def _convert(self, pptx_path):
         try:
@@ -94,7 +102,7 @@ class PPTXtoPDFConverter:
                     pptx_b64 = base64.b64encode(f.read()).decode()
 
                 self._log("⏳ Cargando página de conversión...")
-                await page.goto("http://localhost:8000/index.html")
+                await page.goto(f"http://localhost:{self.port}/index.html")
 
                 self._log("⏳ Esperando que soffice.js se cargue...")
                 await page.wait_for_function("window.sofficeLoaded === true", timeout=120000)
@@ -126,6 +134,7 @@ class PPTXtoPDFConverter:
 
         except Exception as e:
             self._log(f"❌ ERROR: Ocurrió un problema durante la conversión: {e}")
+            self.stop_server()
             return None
 
     def convert(self, pptx_path, output_pdf):
@@ -139,8 +148,7 @@ class PPTXtoPDFConverter:
                 self._log("❌ ERROR: La conversión falló. No se generó el PDF.")
         except Exception as e:
             self._log(f"❌ ERROR GENERAL: {e}")
-        finally:
-            self.stop_server()  
+            self.stop_server()
 
 def main():
     import argparse
@@ -149,11 +157,17 @@ def main():
     )
     parser.add_argument("input", help="Input PPTX file")
     parser.add_argument("output", help="Output PDF file")
-    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging", default=True)
+    parser.add_argument("--port", type=int, default=8000, help="Port for the HTTP server (default: 8000)")
+    parser.add_argument("--headless", action="store_true", help="Run the browser in headless mode", default=True)
+    # TODO: add multiple input files in a folder and output to a folder
+    
     args = parser.parse_args()
 
-    converter = PPTXtoPDFConverter(headless=True, log_enabled=args.verbose)
+    converter = PPTXtoPDFConverter(headless=args.headless, log_enabled=args.verbose, port=args.port)
+    converter.start_server()
     converter.convert(args.input, args.output)
+    converter.stop_server()
 
 if __name__ == "__main__":
     main()

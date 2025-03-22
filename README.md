@@ -1,5 +1,7 @@
 # 📄 pptx2pdfwasm
 
+In fact, you can convert a docx, xlsx, or pptx file to pdf using the Libre Office wasm version.🚀
+
 💡 **Crazy idea**: Use Libre Office wasm version for creating a pptx2pdf library in Python compatible with several desktop platforms (Linux, MacOS, Windows).
 
 This could be overkill, but it is a fun project to work on. 🎉
@@ -54,8 +56,11 @@ pip install git+https://github.com/elloza/pptx2pdfwasm
 
 ```python
 from pptx2pdfwasm import PPTXtoPDFConverter
-converter = PPTXtoPDFConverter(headless=False, log_enabled=False)
+converter = PPTXtoPDFConverter(headless=True, log_enabled=True, port=8000)
+converter.start_server()
 converter.convert("example.pptx", "example.pdf")
+# More conversions with the server running
+converter.stop_server()
 ```
 
 Command line:
@@ -64,8 +69,30 @@ Command line:
 python -m pptx2pdfwasm example.pptx example.pdf
 ```
 
+# TODO 📝
+
+[ ] Test carefully on MacOS and Windows
+[ ] Add multiple files in folder conversion
+
+
+# Known issues and limitation 🐞
+
+* The conversion of pptx could change the tables, the text, or the images. The best way to deal with this is to open previously your file with Libre Office and check if everything is ok.
+
+* Big files could not finish the conversion. The server has a timeout of 120 seconds. This must be changed in the future.
+
+
+# License 📜 and distribution
+
+* The main issue is the distribution of wasm files from this package. All the rights are reserved to the ZetaOffice team. The files are compressed in a zip file and stored in the package. The zip file is extracted in the first run of the library. The zip file is stored in the package, so it is not necessary to download it again. It's not the best solution, but it's working. 📦
+
+If this approach broke any license, please let me know and I will delete it 📧
+
+It's done in this way for convenience and to avoid the limitation of git of 100MB and pypi of 100MB. 📦
+
 # Acknowledgments
 
 Thank you to the ZetaOffice team for the Libre Office wasm version. 🙏
 
 And their great work on the Libre Office wasm version and supporting the community. 🌟
+Check this [link](https://github.com/allotropia/zetajs/issues/11)
