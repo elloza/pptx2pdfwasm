@@ -1,8 +1,10 @@
 # 📄 pptx2pdfwasm
 
+This a Python library to convert a pptx file to pdf using the Libre Office wasm version. 🚀
+
 In fact, you can convert a docx, xlsx, or pptx file to pdf using the Libre Office wasm version.🚀
 
-💡 **Crazy idea**: Use Libre Office wasm version for creating a pptx2pdf library in Python compatible with several desktop platforms (Linux, MacOS, Windows).
+💡 **Initial crazy idea**: Use Libre Office wasm version for creating a pptx2pdf library in Python compatible with several desktop platforms (Linux, MacOS, Windows).
 
 This could be overkill, but it is a fun project to work on. 🎉
 
@@ -79,9 +81,6 @@ python -m pptx2pdfwasm example.pptx example.pdf
 
 * The conversion of pptx could change the tables, the text, or the images. The best way to deal with this is to open previously your file with Libre Office and check if everything is ok.
 
-* Big files could not finish the conversion. The server has a timeout of 120 seconds. This must be changed in the future.
-
-
 # License 📜 and distribution
 
 * The main issue is the distribution of wasm files from this package. All the rights are reserved to the ZetaOffice team. The files are compressed in a zip file and stored in the package. The zip file is extracted in the first run of the library. The zip file is stored in the package, so it is not necessary to download it again. It's not the best solution, but it's working. 📦
@@ -92,7 +91,7 @@ It's done in this way for convenience and to avoid the limitation of git of 100M
 
 # Acknowledgments
 
-Thank you to the ZetaOffice team for the Libre Office wasm version. 🙏
+Thank you to the [ZetaOffice](https://github.com/allotropia/zetajs) team for the Libre Office wasm version. 🙏
 
 And their great work on the Libre Office wasm version and supporting the community. 🌟
 Check this [link](https://github.com/allotropia/zetajs/issues/11)
