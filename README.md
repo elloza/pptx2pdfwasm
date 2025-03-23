@@ -32,12 +32,7 @@ To avoid the limitation of git of 100MB, the files of the web are compressed in 
 
 ## 🚀 Status
 
-**Status**: Finally, it's working on Linux! 🎉
-
-**Pending tasks**:
-
-- [ ] Test on MacOS 🍏
-- [X] Test on Windows 🪟
+**Status**: Finally, it's working! 🎉
 
 **Prerequisites**:
 
@@ -73,8 +68,9 @@ python -m pptx2pdfwasm example.pptx example.pdf
 
 # TODO 📝
 
-- [ ] Test carefully on MacOS and Windows
-- [ ] Add multiple files in folder conversion
+- [X] Test on Windows 🪟
+- [ ] Test on MacOS 🍏
+- [ ] Conversion for complete folders 📁
 
 
 # Known issues and limitation 🐞
