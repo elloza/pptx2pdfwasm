@@ -71,6 +71,7 @@ python -m pptx2pdfwasm example.pptx example.pdf
 - [X] Test on Windows 🪟
 - [ ] Test on MacOS 🍏
 - [ ] Conversion for complete folders 📁
+- [ ] Publish on PyPi📦
 
 
 # Known issues and limitation 🐞
